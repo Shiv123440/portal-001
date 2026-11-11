@@ -209,36 +209,83 @@ class SoundEngine {
     noise.start(now);
   }
 
-  // Interdimensional Travel Vortex Whoosh
+  // Interdimensional Travel Vortex: Smooth cinematic whoosh & lush harmonic shimmer (No harsh buzzing)
   public playVortexTravel() {
     this.resume();
     if (!this.ctx || !this.masterGain || this.isMuted) return;
 
     const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    const filter = this.ctx.createBiquadFilter();
 
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(80, now);
-    osc.frequency.exponentialRampToValueAtTime(600, now + 0.8);
-    osc.frequency.exponentialRampToValueAtTime(120, now + 1.8);
+    // 1. Warm low-frequency wind whoosh using pink/brown noise
+    const bufferSize = Math.floor(this.ctx.sampleRate * 1.6);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let lastOut = 0.0;
+    // Generate gentle brown/pink noise (soft, natural air rush like a cinematic film transition)
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      lastOut = (lastOut + 0.03 * white) / 1.03;
+      data[i] = lastOut * 3.5;
+    }
 
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(200, now);
-    filter.frequency.exponentialRampToValueAtTime(4000, now + 0.8);
-    filter.frequency.exponentialRampToValueAtTime(300, now + 1.8);
+    const windSource = this.ctx.createBufferSource();
+    windSource.buffer = buffer;
 
-    gain.gain.setValueAtTime(0.01, now);
-    gain.gain.linearRampToValueAtTime(0.5, now + 0.7);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+    // Smooth sweeping low-pass filter: opens up gently and glides down
+    const windFilter = this.ctx.createBiquadFilter();
+    windFilter.type = 'lowpass';
+    windFilter.frequency.setValueAtTime(180, now);
+    windFilter.frequency.exponentialRampToValueAtTime(1400, now + 0.5);
+    windFilter.frequency.exponentialRampToValueAtTime(120, now + 1.5);
+    windFilter.Q.setValueAtTime(1.0, now);
 
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.masterGain);
+    const windGain = this.ctx.createGain();
+    windGain.gain.setValueAtTime(0.01, now);
+    windGain.gain.linearRampToValueAtTime(0.35, now + 0.4);
+    windGain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
 
-    osc.start(now);
-    osc.stop(now + 1.8);
+    windSource.connect(windFilter);
+    windFilter.connect(windGain);
+    windGain.connect(this.masterGain);
+    windSource.start(now);
+
+    // 2. Deep warm sub-bass glide (Pure sine wave, pleasant and cinematic)
+    const subOsc = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(95, now);
+    subOsc.frequency.exponentialRampToValueAtTime(50, now + 1.2);
+
+    subGain.gain.setValueAtTime(0.01, now);
+    subGain.gain.linearRampToValueAtTime(0.3, now + 0.35);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.3);
+
+    subOsc.connect(subGain);
+    subGain.connect(this.masterGain);
+    subOsc.start(now);
+    subOsc.stop(now + 1.3);
+
+    // 3. Ethereal crystalline chord shimmer (Pure gentle sine harmonic triad: C - E - G)
+    const chordFrequencies = [523.25, 659.25, 783.99, 1046.5];
+    chordFrequencies.forEach((freq, idx) => {
+      if (!this.ctx || !this.masterGain) return;
+      const chime = this.ctx.createOscillator();
+      const chimeGain = this.ctx.createGain();
+
+      chime.type = 'sine';
+      chime.frequency.setValueAtTime(freq, now + 0.1);
+      chime.frequency.exponentialRampToValueAtTime(freq * 1.05, now + 0.7);
+
+      chimeGain.gain.setValueAtTime(0.001, now);
+      chimeGain.gain.linearRampToValueAtTime(0.045 / (idx + 1), now + 0.35);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+      chime.connect(chimeGain);
+      chimeGain.connect(this.masterGain);
+
+      chime.start(now + 0.1);
+      chime.stop(now + 1.4);
+    });
   }
 
   // Object Interaction Chime (Mushroom, jellyfish, starburst, skyscraper)
