@@ -117,13 +117,13 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = ({
         color={meta.portalTint}
       />
 
-      {/* Postprocessing Bloom */}
+      {/* Postprocessing Bloom: Soft cinematic glow without overexposing */}
       {quality !== 'low' && (
         <EffectComposer multisampling={0}>
           <Bloom
-            intensity={quality === 'high' ? 1.25 : 0.85}
-            luminanceThreshold={0.35}
-            luminanceSmoothing={0.3}
+            intensity={quality === 'high' ? 0.45 : 0.3}
+            luminanceThreshold={0.65}
+            luminanceSmoothing={0.4}
             mipmapBlur={true}
           />
         </EffectComposer>

@@ -81,9 +81,9 @@ export const PortalRing: React.FC<PortalRingProps> = ({
       innerRuneRingRef.current.rotation.z = -time * 0.08;
     }
 
-    // Animate Core PointLight
+    // Animate Core PointLight with balanced illumination
     if (coreLightRef.current) {
-      const targetIntensity = isActive ? 12 : 1.5 + chargeProgress * 10;
+      const targetIntensity = isActive ? 2.8 : 0.8 + chargeProgress * 2.5;
       coreLightRef.current.intensity = THREE.MathUtils.lerp(
         coreLightRef.current.intensity,
         targetIntensity,
@@ -166,8 +166,8 @@ export const PortalRing: React.FC<PortalRingProps> = ({
               <meshStandardMaterial
                 color={isIlluminated ? tintColor : '#1a1829'}
                 emissive={isIlluminated ? tintColor : '#000000'}
-                emissiveIntensity={isIlluminated ? 2.5 : 0.0}
-                roughness={0.3}
+                emissiveIntensity={isIlluminated ? 0.9 : 0.0}
+                roughness={0.4}
               />
             </mesh>
           );

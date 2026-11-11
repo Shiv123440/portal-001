@@ -90,27 +90,27 @@ export const PortalShaderMaterial = {
       float turbulence = (n1 * 0.6 + n2 * 0.4) * 0.5 + 0.5;
 
       // Event horizon energy gradient
-      float eventHorizon = smoothstep(0.0, 0.35, dist);
-      float rimGlow = smoothstep(0.4, 0.98, dist);
+      float eventHorizon = smoothstep(0.0, 0.45, dist);
+      float rimGlow = smoothstep(0.25, 0.95, dist);
 
-      // Color blending
-      vec3 col = mix(uColorCore, uColorRim, rimGlow);
-      col = mix(col, uColorHighlight, pow(turbulence, 2.5) * 0.8);
+      // Color blending: preserve the rich dimensional colors (cyan, magenta, violet)
+      vec3 col = mix(uColorCore * 0.9, uColorRim * 0.85, rimGlow);
+      col = mix(col, uColorHighlight * 0.8, pow(turbulence, 3.2) * 0.35);
 
-      // Central gravitational singularity
-      float centerSingularity = smoothstep(0.3, 0.0, dist);
-      col = mix(col, vec3(0.02, 0.01, 0.05), centerSingularity * (1.0 - uActive * 0.7));
+      // Central gravitational singularity (deep cosmic void in the center)
+      float centerSingularity = smoothstep(0.42, 0.05, dist);
+      col = mix(col, vec3(0.01, 0.005, 0.02), centerSingularity * (1.0 - uActive * 0.4));
 
-      // Internal light flare
-      float coreFlare = exp(-dist * 4.0) * (uActive * 1.5 + uCharge * 0.8);
-      col += uColorHighlight * coreFlare;
+      // Subtle internal light flare without blowing out to flat white
+      float coreFlare = exp(-dist * 5.0) * (uActive * 0.4 + uCharge * 0.25);
+      col += uColorCore * coreFlare;
 
-      // Active / Dormant brightness transition
-      float energyPower = mix(0.12 + uCharge * 0.4, 1.35 + uCharge * 0.5, uActive);
+      // Controlled brightness power
+      float energyPower = mix(0.18 + uCharge * 0.35, 0.85 + uCharge * 0.25, uActive);
       col *= energyPower;
 
       // Soft rim alpha feathering for natural integration with frame
-      float alpha = smoothstep(1.0, 0.88, dist) * (0.4 + uActive * 0.55 + uCharge * 0.3);
+      float alpha = smoothstep(1.0, 0.88, dist) * (0.5 + uActive * 0.45 + uCharge * 0.2);
 
       gl_FragColor = vec4(col, alpha);
     }
